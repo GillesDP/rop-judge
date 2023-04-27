@@ -1,5 +1,7 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 unsigned int telephone(unsigned int n) {
   unsigned int result = 0;
@@ -33,23 +35,36 @@ void print_stack(size_t* base_address, int view) {
   }
 }
 
+void segfault_handler(int signal) {
+  // Catch segmentation faults, don't print error!
+  exit(1);
+}
 
-void attack() {
-  size_t buffer[1]= {0xFF};
+void attack(char* stack) {
+  signal(SIGSEGV, segfault_handler);
 
+  size_t buffer[1] = {0xFF};
+  
   printf("BEFORE:\n");
-  print_stack((size_t*) &buffer, 20);
+  print_stack((size_t*) &buffer, 10);
 
-  printf("<do_something> address: %p\n", &do_something);
-  printf("<attack> return address: %p\n", __builtin_return_address(0));
+  int i = 0;
+  while (buffer[i] != (size_t) __builtin_return_address(0)) i++;
+  buffer[i] = (size_t) &do_something;
+  i++;
 
-  buffer[4] = (size_t) &do_something;
+  char* token = strtok(stack, "\n");
+  while (token != NULL) {
+    buffer[i] = (size_t) strtol(token, NULL, 16);
+    token = strtok(NULL, "\n");
+    i++;
+  }
 
   printf("AFTER:\n");
-  print_stack((size_t*) &buffer, 20);
+  print_stack((size_t*) &buffer, 10);
 }
 
 int main(int argc, char *argv[]) {
-  attack();
+  attack(argv[1]);
   return 0;
 }
