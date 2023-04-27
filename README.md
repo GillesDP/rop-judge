@@ -11,4 +11,7 @@ To see the address space, use:
 ```bash
 objdump -d a.out
 ```
-
+To run the program use:
+```bash
+./a.out 
+```
