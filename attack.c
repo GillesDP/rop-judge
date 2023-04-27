@@ -44,27 +44,25 @@ void attack(char* stack) {
   signal(SIGSEGV, segfault_handler);
 
   size_t buffer[1] = {0xFF};
-  
-  printf("BEFORE:\n");
-  print_stack((size_t*) &buffer, 10);
 
   int i = 0;
   while (buffer[i] != (size_t) __builtin_return_address(0)) i++;
-  buffer[i] = (size_t) &do_something;
-  i++;
-
-  char* token = strtok(stack, "\n");
+  char* token = strtok(stack, "|");
+  printf("ROP CHAIN:\n-> ");
   while (token != NULL) {
     buffer[i] = (size_t) strtol(token, NULL, 16);
-    token = strtok(NULL, "\n");
+    printf("%p: %p\n   ", buffer+i, (void*) buffer[i]);
+    token = strtok(NULL, "|");
     i++;
   }
-
-  printf("AFTER:\n");
-  print_stack((size_t*) &buffer, 10);
+  printf("\n");
 }
 
 int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    printf("Syntax: ./a.out <slot1>|<slot2>|<slot3>|... where each slot is a hexidecimal value.\n");
+    exit(0);
+  }
   attack(argv[1]);
   return 0;
 }
