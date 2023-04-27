@@ -18,8 +18,7 @@ unsigned int telephone(unsigned int n) {
 }
 
 int do_something() {
-  printf("ATTACKED!");
-  return 0;
+  return 1;
 }
 
 void print_stack(size_t* base_address, int view) {
@@ -33,19 +32,22 @@ void print_stack(size_t* base_address, int view) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  size_t marker = 0xFF;
+void attack() {
+  size_t buffer[1];
 
   printf("BEFORE:\n");
-  print_stack(&marker, 20);
+  print_stack((size_t*) &buffer, 20);
 
-  printf("<main> address: %p\n", &main);
   printf("<do_something> address: %p\n", &do_something);
-  
-  marker = strtol(argv[1], NULL, 16);
+  printf("<attack> return address: %p\n", __builtin_return_address(0));
+
+  buffer[4] = (size_t) &do_something;
 
   printf("AFTER:\n");
-  print_stack(&marker, 20);
+  print_stack((size_t*) &buffer, 20);
+}
 
+int main(int argc, char *argv[]) {
+  attack();
   return 0;
 }
