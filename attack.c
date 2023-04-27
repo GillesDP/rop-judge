@@ -18,6 +18,7 @@ unsigned int telephone(unsigned int n) {
 }
 
 int do_something() {
+  printf("ATTACKED!\n");
   return 1;
 }
 
@@ -32,8 +33,9 @@ void print_stack(size_t* base_address, int view) {
   }
 }
 
+
 void attack() {
-  size_t buffer[1];
+  size_t buffer[1]= {0xFF};
 
   printf("BEFORE:\n");
   print_stack((size_t*) &buffer, 20);
