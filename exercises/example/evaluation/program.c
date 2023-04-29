@@ -5,7 +5,7 @@
 
 extern char __executable_start;
 
-int do_something() {
+int attack() {
   printf("ATTACKED!\n");
   return 1;
 }

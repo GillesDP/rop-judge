@@ -1,0 +1,19 @@
+{
+  "type": "exercise",
+  "description": {
+    "names": {
+      "nl": "Return Oriented Programming Voorbeeld",
+      "en": "Return Oriented Programming Example"
+    }
+  },
+  "natural_language": "en",
+  "resources": "exercises/example/",
+  "source": "exercises/example/solution/output.txt",
+  "judge": ".",
+  "workdir": "",
+  "programming_language": "txt",
+  "access": "private",
+  "time_limit": 10,
+  "memory_limit": 10000000,
+  "labels": ["ROP", "Return Oriented Programming"]
+}

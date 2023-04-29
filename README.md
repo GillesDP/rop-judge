@@ -20,7 +20,7 @@ The submission is a plain-text file where each line represents a stack slot (hex
 The first element on the ROP chain is `0x01104`, this value will be written at the original return address, starting the attack (or ROP execution). Note that empty slots or represented with empty lines.
 
 ## Exercise Structure
-When building your own exercises, please follow the the structure specified on the Dodona [documentation](https://docs.dodona.be/en/references/exercise-directory-structure/) page. The `evaluation` folder is made available to the judge and requires both a `program.out` file and an `output.txt` file.
+When building your own exercises, please follow the structure specified on the Dodona [documentation](https://docs.dodona.be/en/references/exercise-directory-structure/) page. The `evaluation` folder is made available to the judge and requires both a `program.out` file and an `output.txt` file.
 
 ```
 +-- exercise
@@ -39,7 +39,7 @@ When building your own exercises, please follow the the structure specified on t
 |       +-- program.out           # Compiled program with exploit
 |       +-- output.txt            # Expected output after evaluation
 ```
-The program `program.out` technically needs to contain an buffer overflow exploit. This judge will feed the program a string of hexadecimal stack slot values (with separator `|`) representing the ROP chain. Your program needs to simulate a buffer overflow using this information. The following template will do just that!
+The program `program.out` technically needs to contain a buffer overflow exploit. This judge will feed the program a string of hexadecimal stack slot values (with separator `|`) representing the ROP chain. Your program needs to simulate a buffer overflow using this information. The following template will do just that!
 ```c
 #include <signal.h>
 #include <stdlib.h>
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 ```
 You can then compile your code to a binary using any parameters you like. It is **recommended** to use position-independent executables (PIE). Now use `objdump -d <executable>` to obtain the Assembly instructions along with their addresses, so you can setup an appropriate exercise description.
 
-Furthermore, this judge also requires a `output.txt` file. This file contains the expected console output after executing the ROP chain. It is used by the judge to evaluate the correctness of the submission.
+Furthermore, this judge also requires an `output.txt` file. This file contains the expected console output after executing the ROP chain. It is used by the judge to evaluate the correctness of the submission.
 
 ## Development
 > **Note:** This judge is still in development. 
