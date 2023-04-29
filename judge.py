@@ -6,6 +6,7 @@ from dodona.dodona_command import Judgement, Message, ErrorType, Tab, MessageFor
 from dodona.dodona_config import DodonaConfig
 from dodona.translator import Translator
 from utils.messages import missing_program_file, missing_output_file
+from utils.regex import convert_to_hex
 
 def main():
     """
@@ -14,10 +15,10 @@ def main():
     # Read config JSON from stdin
     #config = DodonaConfig.from_json(sys.stdin)
     # [DEBUG] Hardcode config path for debugging purposes
-    with open(os.path.join("exercises/example/config.json"), "r") as infile:
-        config = DodonaConfig.from_json(infile)
+    with open(os.path.join("exercises/example/config.json"), "r") as file:
+        config = DodonaConfig.from_json(file)
 
-    with Judgement() as judge:
+    with Judgement():
         # Perform sanity check
         config.sanity_check()
         # Initiate translator
@@ -27,10 +28,13 @@ def main():
         assert os.path.exists(program), missing_program_file(config.translator)
         output = os.path.join(config.resources, "./evaluation/output.txt")
         assert os.path.exists(output), missing_output_file(config.translator)
+        
+        submission = os.path.join(config.source)
+        chain = parse_submission(submission)
 
         with Tab("Output"):
-            command = [program, "0x11cd"]
-            # Run program with given stack input
+            # Run program with given ROP chain
+            command = [program, chain]
             process = subprocess.run(
                 command,
                 text=True,
@@ -42,6 +46,12 @@ def main():
         with Tab("ROP Chain"):
             pass
 
-        
+def parse_submission(submission):
+    chain = ""
+    with open(submission, "r") as file:
+        chain = "|".join([convert_to_hex(slot) for slot in file.readlines()])
+    chain.replace("\n", "")
+    return chain
+
 if __name__ == "__main__":
     main()

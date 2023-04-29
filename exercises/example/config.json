@@ -8,7 +8,7 @@
   },
   "natural_language": "en",
   "resources": "exercises/example/",
-  "source": "exercises/example/solution/output.txt",
+  "source": "exercises/example/solution/solution.txt",
   "judge": ".",
   "workdir": "",
   "programming_language": "txt",
