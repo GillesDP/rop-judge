@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-from dodona.dodona_command import Judgement, Message, ErrorType, Tab, MessageFormat
+from dodona.dodona_command import Judgement, Message, ErrorType, Tab, MessageFormat, MessagePermission
 from dodona.dodona_config import DodonaConfig
 from dodona.translator import Translator
 from utils.messages import missing_program_file, missing_output_file
@@ -44,7 +44,19 @@ def main():
             )
 
         with Tab("ROP Chain"):
-            pass
+            bitsize = 32
+            chain = chain.split("|")
+            description = f"ROP CHAIN (size: {len(chain)})\n+" + "-"*(4+bitsize//4) + "+"
+            for pos, slot in enumerate(chain):
+                if slot == "?":
+                    description += "\n| " + "?"*(2 + bitsize//4) + " |"
+                else:
+                    description += "\n| " + "{0:#0{1}x}".format(int(slot, 16), 2+bitsize//4) + " |"
+                if not pos:
+                    description += " <- return"
+            description += "\n+" + "-"*(4+bitsize//4) + "+"
+            with Message(description=description, format=MessageFormat.CODE):
+                pass
 
 def parse_submission(submission):
     chain = ""
