@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-from dodona.dodona_command import Judgement, Message, ErrorType, Tab, MessageFormat, MessagePermission
+from dodona.dodona_command import Judgement, Message, Tab, MessageFormat, MessagePermission, TestCase, Test, Context
 from dodona.dodona_config import DodonaConfig
 from dodona.translator import Translator
 from utils.messages import missing_program_file, missing_output_file
@@ -42,6 +42,16 @@ def main():
                 capture_output=True,
                 timeout=config.time_limit,
             )
+            expected = ""
+            with open(output, "r") as file:
+                expected = "".join(file.readlines())
+            accepted = False
+            if expected == process.stdout:
+                accepted = True
+            with Context():
+                with TestCase(description="Forcing buffer overflow exploit...", accepted=accepted):
+                    with Test(description=" ".join(command), expected=expected, generated=process.stdout):
+                        pass
 
         with Tab("ROP Chain"):
             bitsize = 32
