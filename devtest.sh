@@ -1,0 +1,1 @@
+cat exercises/example/config.json | python3 ./judge.py

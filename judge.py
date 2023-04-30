@@ -13,10 +13,7 @@ def main():
     Main judge method
     """
     # Read config JSON from stdin
-    #config = DodonaConfig.from_json(sys.stdin)
-    # [DEBUG] Hardcode config path for debugging purposes
-    with open(os.path.join("exercises/example/config.json"), "r") as file:
-       config = DodonaConfig.from_json(file)
+    config = DodonaConfig.from_json(sys.stdin)
 
     with Judgement():
         # Perform sanity check
@@ -52,15 +49,21 @@ def main():
             accepted = False
             if expected == process.stdout:
                 accepted = True
-            message = config.translator.translate(Translator.Text.SUCCESSFUL_HACKING) if accepted else config.translator.translate(Translator.Text.UNSUCCESSFUL_HACKING)
+            description = config.translator.translate(Translator.Text.SUCCESSFUL_HACKING) if accepted else config.translator.translate(Translator.Text.UNSUCCESSFUL_HACKING)
 
             with Context() as context:
                 context.accepted = accepted
-                with TestCase(description=message, format="code") as testcase:
+                with TestCase(description=description, format="code") as testcase:
                     testcase.accepted = accepted
                     with Test(expected=expected) as test:
                         test.generated = process.stdout
                         test.status = {"enum": ErrorType.CORRECT if accepted else ErrorType.WRONG}
+                
+                with TestCase(description="Exit status: " + str(process.returncode), format="code") as testcase:
+                    testcase.accepted = True if process.stderr == "" else False
+                    if not testcase.accepted:
+                        with Message(process.stderr):
+                            pass
 
         with Tab("ROP Chain"):
             bitsize = 32
