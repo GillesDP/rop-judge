@@ -13,10 +13,10 @@ def main():
     Main judge method
     """
     # Read config JSON from stdin
-    #config = DodonaConfig.from_json(sys.stdin)
+    config = DodonaConfig.from_json(sys.stdin)
     # [DEBUG] Hardcode config path for debugging purposes
-    with open(os.path.join("exercises/example/config.json"), "r") as file:
-        config = DodonaConfig.from_json(file)
+    #with open(os.path.join("exercises/example/config.json"), "r") as file:
+    #   config = DodonaConfig.from_json(file)
 
     with Judgement():
         # Perform sanity check
