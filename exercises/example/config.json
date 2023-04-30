@@ -7,7 +7,7 @@
     }
   },
   "natural_language": "en",
-  "resources": "exercises/example/",
+  "resources": "exercises/example/evaluation",
   "source": "exercises/example/solution/solution.txt",
   "judge": ".",
   "workdir": "",

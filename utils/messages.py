@@ -11,7 +11,8 @@ def missing_program_file(translator: Translator):
     with Message(
             permission=MessagePermission.STAFF,
             description=translator.translate(Translator.Text.MISSING_PROGRAM_FILE),
-            format=MessageFormat.TEXT
+            format=MessageFormat.TEXT,
+            accepted=False
     ):
         pass
 
@@ -20,6 +21,7 @@ def missing_output_file(translator: Translator):
     with Message(
             permission=MessagePermission.STAFF,
             description=translator.translate(Translator.Text.MISSING_OUTPUT_FILE),
-            format=MessageFormat.TEXT
+            format=MessageFormat.TEXT,
+            accepted=False
     ):
         pass

@@ -23,6 +23,8 @@ class Translator:
 
         MISSING_PROGRAM_FILE = auto()
         MISSING_OUTPUT_FILE = auto()
+        SUCCESSFUL_HACKING = auto()
+        UNSUCCESSFUL_HACKING = auto()
 
     def __init__(self, language: Language):
         self.language = language
@@ -96,10 +98,14 @@ class Translator:
     text_translations = {
         Language.EN: {
             Text.MISSING_PROGRAM_FILE: "The program.out file is missing.",
-            Text.MISSING_OUTPUT_FILE: "The output.txt file is missing."
+            Text.MISSING_OUTPUT_FILE: "The output.txt file is missing.",
+            Text.SUCCESSFUL_HACKING: "Hacking was successful!",
+            Text.UNSUCCESSFUL_HACKING: "Hacking was unsuccessful!"
         },
         Language.NL: {
             Text.MISSING_PROGRAM_FILE: "Het bestand program.out ontbreekt.",
-            Text.MISSING_OUTPUT_FILE: "Het bestand output.txt ontbreekt."
+            Text.MISSING_OUTPUT_FILE: "Het bestand output.txt ontbreekt.",
+            Text.SUCCESSFUL_HACKING: "Programmafout succesvol uitgebuit!",
+            Text.UNSUCCESSFUL_HACKING: "Programmafout niet succesvol uitgebuit!"
         }
     }
