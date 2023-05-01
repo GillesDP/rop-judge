@@ -47,8 +47,6 @@ The program `program.out` technically needs to contain a buffer overflow exploit
 
 extern char __executable_start;
 
-// YOUR CODE HERE
-
 void exploit(char* stack) {
   size_t buffer[1] = {0xFF};
   int i = 0;
@@ -72,25 +70,42 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 ```
-You can then compile your code to a binary using any parameters you like. It is **recommended** to use position-independent executables (PIE). Now use `objdump -d <executable>` to obtain the Assembly instructions along with their addresses, so you can setup an appropriate exercise description.
+You can then compile your code to a binary using any parameters you like. It is **recommended** to use position-independent executables (PIE). Now use `objdump -d <executable>` to obtain the Assembly instructions along with their addresses, so you can setup an appropriate exercise description. Furthermore, it is **highly recommended** to compile your program in the `dodona-rop` docker image to avoid compatibility issues. Your program will be ran in this docker image when users submit their solution.
 
-Furthermore, this judge also requires an `output.txt` file. This file contains the expected console output after executing the ROP chain. It is used by the judge to evaluate the correctness of the submission.
+This judge requires an `output.txt` file. This file contains the expected console output after executing the ROP chain. It is used by the judge to evaluate the correctness of the submission.
 
-## Development
-> **Note:** This judge is still in development. 
+![ROP judge behind the scenes](./ROP_judge_scheme.png)
 
-Currently building a program `example.c` that's given a string of stack slots (with separator `|`) representing the ROP chain. Each substring (separated by `|`) is assumed to be a hexadecimal value. The program will then execute the given ROP chain.
+## Exercise Creation
+To build your own exercises, please use the exercise structure as outlined above. You can use the given template to build a program upon, or create your own. The only real constrained is that it must accept a string of hexadecimal values representing the ROP chain. Below are some commands that will help you compile your program for a given architecture, the judge will try to recognize the architecture using `file program.out`. It is important you make sure there is no stack protection enabled when compiling!
 
-Use the following command to compile `example.c` (for x86, 32-bit). Note that we allow **position-independent executables** (PIE). The addresses given in the ROP chain are hence relative, they'll be offset by the actual address where the binary is loaded.
+#### AT&T x86 (32-bit)
 ```bash
-gcc -O0 -m32 -fno-stack-protector example.c
+gcc -O0 -m32 -fno-stack-protector program.c -o program.out
 ```
-To see the address space of the output program, use `objdump`.
+#### AT&T x86 (64-bit)
 ```bash
-objdump -d a.out
+gcc -O0 -fno-stack-protector program.c -o program.out
 ```
-### Example
-A simple example of this program in use. Suppose our program has the following code we would like to execute with a ROP chain (obtained using `objdump`). This particular function `do_something` will just print `"ATTACKED!"` to the console.
+#### Intel x86 (32-bit)
+```bash
+gcc -O0 -m32 -masm=intel -fno-stack-protector program.c -o program.out
+```
+#### Intel x86 (64-bit)
+```bash
+gcc -O0 -masm=intel -fno-stack-protector program.c -o program.out
+```
+#### ARM (32-bit)
+```bash
+arm-linux-gnueabihf-gcc -static -O0 -fno-stack-protector program.c -o program.out
+```
+#### Aarch64 (64-bit)
+```bash
+aarch64-linux-gnu-gcc -static -O0 -fno-stack-protector program.c -o program.out
+```
+
+## Exercise Example
+A simple example of this program in use. Suppose our program has the following code we would like to execute with a ROP chain (obtained using `objdump`). This particular function `do_something` will just print `"ATTACKED!"` to the console. To see the address space of the output program, use `objdump -d program.out`.
 ```
 00001266 <do_something>:
     1266:	55                   	push   %ebp
@@ -110,7 +125,7 @@ A simple example of this program in use. Suppose our program has the following c
     1293:	c9                   	leave  
     1294:	c3                   	ret
 ```
-Our ROP chain is very simple, as no actual arguments need to be passed. For the sake of demonstration, we'll just add additional elements (that are not actually needed) to the stack.
+Our ROP chain is very simple, as no actual arguments need to be passed to `do_something`. For the sake of demonstration, we'll just add additional elements (that are not actually needed) to the stack.
 ```bash
 ./a.out "0x1266|0x2|0x1000"
 ```
