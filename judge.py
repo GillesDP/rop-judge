@@ -59,26 +59,60 @@ def main():
                         test.generated = process.stdout
                         test.status = {"enum": ErrorType.CORRECT if accepted else ErrorType.WRONG}
                 
-                with TestCase(description="Exit status: " + str(process.returncode), format="code") as testcase:
+                with TestCase(description="Return code: " + str(process.returncode), format="code") as testcase:
                     testcase.accepted = True if process.stderr == "" else False
                     if not testcase.accepted:
                         with Message(process.stderr):
                             pass
 
         with Tab("ROP Chain"):
-            bitsize = 32
+            file_info = subprocess.run(
+                ["file", program],
+                text=True,
+                errors="backslashreplace",
+                capture_output=True,
+                timeout=config.time_limit,
+            )
+            objdump = subprocess.run(
+                ["objdump", "-d", program],
+                text=True,
+                errors="backslashreplace",
+                capture_output=True,
+                timeout=config.time_limit,
+            )
+            objdump_output = objdump.stdout
+            bitsize = 32 if "32-bit" in file_info.stdout else 64
             chain = chain.split("|")
-            description = f"ROP CHAIN (size: {len(chain)})\n+" + "-"*(4+bitsize//4) + "+"
+            description = f"Executable architecture: {bitsize}-bit\n"
+            description += f"ROP chain size: {len(chain)} slot{'s' if len(chain) > 1 else ''}\n\n"
             for pos, slot in enumerate(chain):
+                description += f"{pos*bitsize//8:04} | "
                 if slot == "?":
-                    description += "\n| " + "?"*(2 + bitsize//4) + " |"
+                    description += "?"*(2+bitsize//4)
                 else:
-                    description += "\n| " + "{0:#0{1}x}".format(int(slot, 16), 2+bitsize//4) + " |"
-                if not pos:
-                    description += " <- return"
-            description += "\n+" + "-"*(4+bitsize//4) + "+"
+                    description += "{0:#0{1}x}".format(int(slot, 16), 2+bitsize//4)
+                instruction = get_instruction_at_address(objdump_output, slot.strip())
+                if instruction:
+                    description += f" --> {instruction}"
+                description += "\n"
             with Message(description=description, format=MessageFormat.CODE):
                 pass
+
+def get_instruction_at_address(objdump, address):
+    for i, line in enumerate(objdump.split("\n")):
+        try:
+            if line.lstrip().startswith(address.replace("0x", "")):
+                context = ""
+                for j in range(1, i):
+                    search_context = objdump.split("\n")[i-j]
+                    if not search_context.startswith("\t") and "<" in search_context and ">:" in search_context:
+                        context = search_context.split(" ")[1].replace(">:", f":{j-1}>:") + " "
+                        break
+                instruction = context + line.split(':')[1].lstrip().split('\t')[1]
+                return instruction
+        except:
+            pass
+    return ""
 
 def parse_submission(submission):
     chain = ""
