@@ -25,6 +25,7 @@ class Translator:
         MISSING_OUTPUT_FILE = auto()
         SUCCESSFUL_HACKING = auto()
         UNSUCCESSFUL_HACKING = auto()
+        COULD_NOT_FORMAT_NUMBER = auto()
 
     def __init__(self, language: Language):
         self.language = language
@@ -100,12 +101,14 @@ class Translator:
             Text.MISSING_PROGRAM_FILE: "The program.out file is missing.",
             Text.MISSING_OUTPUT_FILE: "The output.txt file is missing.",
             Text.SUCCESSFUL_HACKING: "Hacking was successful!",
-            Text.UNSUCCESSFUL_HACKING: "Hacking was unsuccessful!"
+            Text.UNSUCCESSFUL_HACKING: "Hacking was unsuccessful!",
+            Text.COULD_NOT_FORMAT_NUMBER: "Value could not be formatted to hexadecimal number!"
         },
         Language.NL: {
             Text.MISSING_PROGRAM_FILE: "Het bestand program.out ontbreekt.",
             Text.MISSING_OUTPUT_FILE: "Het bestand output.txt ontbreekt.",
             Text.SUCCESSFUL_HACKING: "Programmafout succesvol uitgebuit!",
-            Text.UNSUCCESSFUL_HACKING: "Programmafout niet succesvol uitgebuit!"
+            Text.UNSUCCESSFUL_HACKING: "Programmafout niet succesvol uitgebuit!",
+            Text.COULD_NOT_FORMAT_NUMBER: "Waarde kan niet worden vertaald naar een hexadecimaal getal!"
         }
     }

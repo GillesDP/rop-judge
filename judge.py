@@ -2,11 +2,10 @@ import os
 import sys
 import subprocess
 
-from dodona.dodona_command import Judgement, Message, Tab, MessageFormat, MessagePermission, TestCase, Test, Context, DodonaException, ErrorType
+from dodona.dodona_command import Judgement, Message, Tab, MessageFormat, MessagePermission, TestCase, Test, Context, DodonaException, ErrorType, Annotation
 from dodona.dodona_config import DodonaConfig
 from dodona.translator import Translator
 from utils.messages import missing_program_file, missing_output_file
-from utils.regex import convert_to_hex
 
 def main():
     """
@@ -33,6 +32,12 @@ def main():
         submission = os.path.join(config.source)
         chain = parse_submission(submission)
 
+        # Add annotations to submitted ROP chain (in case value could not be translated to hexadecimal)
+        for row, slot in enumerate(chain.split("|")):
+            if slot == "?":
+                with Annotation(row=row, text=config.translator.translate(Translator.Text.COULD_NOT_FORMAT_NUMBER)):
+                    pass
+
         with Tab("Output"):
             # Run program with given ROP chain
             command = [program, chain]
@@ -43,14 +48,19 @@ def main():
                 capture_output=True,
                 timeout=config.time_limit,
             )
+
+            # Get expected output from output.txt
             expected = ""
             with open(output, "r") as file:
                 expected = "".join(file.readlines())
+
+            # Determine whether exercise was solved correctly
             accepted = False
             if expected == process.stdout:
                 accepted = True
             description = config.translator.translate(Translator.Text.SUCCESSFUL_HACKING) if accepted else config.translator.translate(Translator.Text.UNSUCCESSFUL_HACKING)
 
+            # Formatting to Dodona interface
             with Context() as context:
                 context.accepted = accepted
                 with TestCase(description=description, format="code") as testcase:
@@ -60,12 +70,15 @@ def main():
                         test.status = {"enum": ErrorType.CORRECT if accepted else ErrorType.WRONG}
                 
                 with TestCase(description="Return code: " + str(process.returncode), format="code") as testcase:
-                    testcase.accepted = True if process.stderr == "" else False
+                    stderr = process.stderr
+                    testcase.accepted = True if stderr == "" or accepted else False
                     if not testcase.accepted:
-                        with Message(process.stderr):
+                        with Message(stderr):
                             pass
 
+        # Visualizing submitted ROP Chain
         with Tab("ROP Chain"):
+            # Get information about program.out
             file_info = subprocess.run(
                 ["file", program],
                 text=True,
@@ -81,10 +94,15 @@ def main():
                 timeout=config.time_limit,
             )
             objdump_output = objdump.stdout
-            bitsize = 32 if "32-bit" in file_info.stdout else 64
+            file_info_output = file_info.stdout
+            bitsize = 32 if "32-bit" in file_info_output else 64
+
+            # Format submitted ROP chain
             chain = chain.split("|")
             description = f"Executable architecture: {bitsize}-bit\n"
             description += f"ROP chain size: {len(chain)} slot{'s' if len(chain) > 1 else ''}\n\n"
+
+            # Format each slot and add instruction (if value corresponds with instruction address)
             for pos, slot in enumerate(chain):
                 description += f"{pos*bitsize//8:04} | "
                 if slot == "?":
@@ -95,8 +113,21 @@ def main():
                 if instruction:
                     description += f" --> {instruction}"
                 description += "\n"
+
             with Message(description=description, format=MessageFormat.CODE):
                 pass
+
+def convert_to_hex(input_string):
+    try:
+        return str(hex(int(input_string)))
+    except:
+        if input_string.startswith("0x") and set(input_string[2:].lower()).issubset(set("0123456789abcdef")):
+            return input_string
+        elif input_string.startswith("0b") and set(input_string[2:]).issubset(set("01")):
+            return str(hex(int(input_string, 2)))
+        elif input_string.startswith("0o") and set(input_string[2:]).issubset(set("01234567")):
+            return str(hex(int(input_string, 8)))
+    return "?"
 
 def get_instruction_at_address(objdump, address):
     for i, line in enumerate(objdump.split("\n")):
@@ -117,7 +148,7 @@ def get_instruction_at_address(objdump, address):
 def parse_submission(submission):
     chain = ""
     with open(submission, "r") as file:
-        chain = "|".join([convert_to_hex(slot) for slot in file.readlines()])
+        chain = "|".join([convert_to_hex(slot.strip()) for slot in file.readlines()])
     chain.replace("\n", "")
     return chain
 
