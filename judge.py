@@ -33,7 +33,7 @@ def main():
         chain = parse_submission(submission)
 
         # Add annotations to submitted ROP chain (in case value could not be translated to hexadecimal)
-        for row, slot in enumerate(chain.split("|")):
+        for row, slot in enumerate(parse_submission(submission, ignore_empty=True).split("|")):
             if slot == "?":
                 with Annotation(row=row, text=config.translator.translate(Translator.Text.COULD_NOT_FORMAT_NUMBER)):
                     pass
@@ -145,10 +145,10 @@ def get_instruction_at_address(objdump, address):
             pass
     return ""
 
-def parse_submission(submission):
+def parse_submission(submission, ignore_empty=False):
     chain = ""
     with open(submission, "r") as file:
-        chain = "|".join([convert_to_hex(slot.strip()) for slot in file.readlines()])
+        chain = "|".join(["" if ignore_empty and slot.strip() == "" else convert_to_hex(slot.strip()) for slot in file.readlines()])
     chain.replace("\n", "")
     return chain
 
